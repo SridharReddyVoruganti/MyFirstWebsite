@@ -1,0 +1,69 @@
+﻿@model MyHome.Controllers.User
+
+<script src="~/Scripts/jquery-3.3.1.min.js"></script>
+
+<div class="col-12">
+    <h1>
+        Get Estimate
+    </h1>
+</div>
+
+@using (Html.BeginForm("GetInfo", "Home", FormMethod.Post))
+{
+    <div class="form-group">
+        @Html.TextBoxFor(x => x.FirstName, new { placeholder = "FirstName", @class = "form-input" })
+        @Html.TextBoxFor(x => x.LastName, new { placeholder = "LastName", @class = "form-input" })
+        @Html.TextBoxFor(x => x.Email, new { placeholder = "Email", @class = "form-input" })
+        @Html.TextBoxFor(x => x.Phone, new { @type = "number", placeholder = "Phone", @class = "form-input" })
+        @Html.TextBoxFor(x => x.Street, new { placeholder = "Street", @class = "form-input" })
+        @Html.TextBoxFor(x => x.City, new { placeholder = "City", @class = "form-input" })
+        @Html.TextBoxFor(x => x.State, new { @maxlength = "2", placeholder = "State", @class = "form-input" })
+        @Html.TextBoxFor(x => x.Country, new { placeholder = "Country", @class = "form-input" })
+        @Html.TextBoxFor(x => x.ZipCode, new { placeholder = "ZipCode", @class = "form-input" })
+    </div>
+    <button type="submit" class="btn btn-primary">Zestimate</button>
+}
+@if (Model.Error != null)
+{
+    <div style="margin-top: 20px;">
+        <label>@Model.Error</label>
+    </div>
+}
+else if (Model != null && Model.MonthlyRent != null)
+{
+    <div style="margin-top: 20px;">
+        <label>Your estimated monthly rent is @Model.MonthlyRent</label><br /><br />
+        <label>Address: @Model.Street @Model.City @Model.State</label><br /><br />
+        <label>Zestimate: @Model.RentZestimate.response.results.result.zestimate.amount.currency @Model.RentZestimate.response.results.result.zestimate.amount.text</label><br /><br />
+        @*<label>Last Updated: @Model.RentZestimate.response.results.result.zestimate.last_updated</label><br /><br />*@
+        <label>Value change in @Model.RentZestimate.response.results.result.zestimate.valueChange.duration day(s): @Model.RentZestimate.response.results.result.zestimate.valueChange.text</label><br /><br />
+
+        <label>Please enter your expected monthly rent: @Html.TextBoxFor(x => x.ExpectedRent, new { id="expectedrent", @type = "number", placeholder = "Enter Expected Rent", @class = "form-input" })</label><br /><br />
+
+        <label>Email the details for future reference: </label><button type="submit" class="btn btn-connect btn-primary">Email</button>
+    </div>
+}
+
+<script type="text/javascript" charset="utf-8">
+    var tracking = @Html.Raw(Json.Encode(Model));
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('.btn-connect').click(function () {
+            var rent = $('#expectedrent').val();
+            $.ajax({
+                url: "/Home/SendEmail",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({ user: tracking, expectedrent: rent }),
+                contentType: 'application/json; charset=utf-8',
+                success: function () {
+                },
+                error: function () {
+                }
+            });
+            $('.btn-connect').css('background-color', 'green');
+        });
+    });
+</script>
